@@ -1,0 +1,42 @@
+# ============================================================
+# .htaccess — پروکسی API + سرو مستقیم فایل‌ها + thumbnail
+# ============================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # API → PHP proxy
+    RewriteRule ^api/(.*)$ api.php?path=/api/$1 [L,QSA]
+
+    # Thumbnail → PHP proxy
+    RewriteRule ^thumb/(.*)$ thumb.php?path=/$1 [L,QSA]
+
+    # فایل‌های واقعی → Apache مستقیم
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^files/(.*)$ files.php?path=/$1 [L,QSA]
+</IfModule>
+
+<IfModule mod_php.c>
+    php_value upload_max_filesize 50M
+    php_value post_max_size 200M
+    php_value max_execution_time 900
+    php_value max_input_time 900
+    php_value memory_limit 512M
+    php_value max_file_uploads 30
+</IfModule>
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 50M
+    php_value post_max_size 200M
+    php_value max_execution_time 900
+    php_value max_input_time 900
+    php_value memory_limit 512M
+    php_value max_file_uploads 30
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 50M
+    php_value post_max_size 200M
+    php_value max_execution_time 900
+    php_value max_input_time 900
+    php_value memory_limit 512M
+    php_value max_file_uploads 30
+</IfModule>

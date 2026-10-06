@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>استودیو محصول</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, 'Segoe UI', Tahoma, sans-serif;
+    background: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000);
+    overflow-x: hidden;
+  }
+  .app { padding: 12px 14px 90px; max-width: 700px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 8px 0 16px; }
+  h2 { font-size: 15px; margin: 16px 0 8px; opacity: .8; }
+
+  .card {
+    background: var(--tg-theme-secondary-bg-color, #f4f4f5);
+    border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  }
+
+  .tabs {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: space-around;
+    background: var(--tg-theme-secondary-bg-color, #f4f4f5);
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(128,128,128,.15);
+    z-index: 10;
+  }
+  .tab {
+    flex: 1; text-align: center; padding: 6px;
+    font-size: 11px; color: var(--tg-theme-hint-color, #888);
+    cursor: pointer; border-radius: 10px;
+  }
+  .tab.active { color: var(--tg-theme-button-color, #2481cc); }
+  .tab .ico { font-size: 20px; display: block; margin-bottom: 2px; }
+
+  button.primary {
+    background: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #fff);
+    border: none; border-radius: 12px;
+    padding: 12px 16px; font-size: 15px; font-weight: 600;
+    width: 100%; cursor: pointer; font-family: inherit;
+    box-shadow: 0 4px 14px rgba(36,129,204,.25);
+    transition: transform .1s;
+  }
+  button.primary:active { transform: scale(.98); }
+  button.primary:disabled { opacity: .5; }
+
+  textarea, input[type=text] {
+    width: 100%; border: 1px solid rgba(128,128,128,.25);
+    background: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #000);
+    border-radius: 10px; padding: 10px 12px;
+    font-family: inherit; font-size: 14px;
+    resize: vertical; min-height: 80px;
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--tg-theme-hint-color, #999);
+    border-radius: 16px; padding: 28px 16px;
+    text-align: center; cursor: pointer;
+    transition: all .2s;
+  }
+  .upload-zone:active { background: rgba(128,128,128,.1); }
+  .upload-zone .plus { font-size: 36px; opacity: .5; }
+
+  .segment-control {
+    display: flex;
+    background: var(--tg-theme-bg-color, #fff);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+    border: 1px solid rgba(128,128,128,.15);
+  }
+  .seg-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    background: transparent;
+    color: var(--tg-theme-text-color, #000);
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .seg-btn.active {
+    background: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #fff);
+    box-shadow: 0 2px 8px rgba(36,129,204,.35);
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 28px;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 22px; width: 22px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+  }
+  input:checked + .slider {
+    background-color: var(--tg-theme-button-color, #2481cc);
+  }
+  input:checked + .slider:before {
+    transform: translateX(22px);
+  }
+
+  .style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .style-opt {
+    padding: 12px 10px; border-radius: 12px;
+    border: 2px solid transparent;
+    background: var(--tg-theme-bg-color, #fff);
+    text-align: center; cursor: pointer;
+    transition: all .2s;
+  }
+  .style-opt.selected { border-color: var(--tg-theme-button-color, #2481cc); }
+  .style-opt .emoji { font-size: 24px; display: block; margin-bottom: 4px; }
+  .style-opt .name { font-size: 13px; font-weight: 600; }
+  .style-opt .desc { font-size: 10px; opacity: .6; margin-top: 3px; }
+
+  .gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .gallery img {
+    width: 100%; aspect-ratio: 1; object-fit: cover;
+    border-radius: 10px; cursor: pointer;
+    background: rgba(128,128,128,.1);
+  }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .compare-item { position: relative; }
+  .compare-item img {
+    width: 100%; aspect-ratio: 1; object-fit: cover;
+    border-radius: 10px;
+    background: rgba(128,128,128,.1);
+  }
+  .compare-item .label {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,.65); color: #fff;
+    font-size: 11px; padding: 2px 8px; border-radius: 6px;
+  }
+
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2.5px solid rgba(255,255,255,.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin .8s linear infinite; vertical-align: middle;
+    margin-left: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty { text-align: center; padding: 40px 20px; opacity: .5; }
+  .empty .ico { font-size: 48px; margin-bottom: 8px; }
+  .hidden { display: none !important; }
+
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-size: 11px; background: rgba(128,128,128,.15);
+  }
+  .badge.admin { background: #d32f2f; color: #fff; }
+
+  .stat-row {
+    display: flex; justify-content: space-around;
+    text-align: center; padding: 6px 0;
+  }
+  .stat-row .num { font-size: 20px; font-weight: 700; }
+  .stat-row .lbl { font-size: 11px; opacity: .6; }
+
+  .user-card { padding: 12px; border-radius: 12px;
+    background: var(--tg-theme-bg-color, #fff);
+    margin-bottom: 10px;
+  }
+  .user-card .head {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 8px;
+  }
+  .user-card .time { font-size: 11px; opacity: .5; }
+
+  .custom-prompt-hint {
+    font-size: 12px; opacity: .6; margin-top: 6px; line-height: 1.6;
+  }
+
+  #debugBar {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: #d32f2f; color: #fff;
+    padding: 8px 12px; font-size: 12px;
+    z-index: 100; display: none;
+    direction: ltr; text-align: left;
+  }
+
+  .hashtag-box {
+    background: var(--tg-theme-bg-color, #fff);
+    border-radius: 10px; padding: 12px;
+    margin-top: 10px;
+    font-size: 13px; line-height: 2;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .hashtag-box .ht {
+    display: inline-block;
+    background: rgba(36,129,204,.12);
+    color: var(--tg-theme-button-color, #2481cc);
+    padding: 3px 9px; border-radius: 8px;
+    margin: 3px 2px;
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-color, #2481cc);
+    border-radius: 8px; padding: 8px 14px;
+    font-family: inherit; font-size: 13px;
+    cursor: pointer; margin-top: 8px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .15s;
+  }
+  .copy-btn:active {
+    background: rgba(36,129,204,.15);
+    transform: scale(.97);
+  }
+
+  /* 🆕 کارت محصول با نام */
+  .product-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg,
+                rgba(36,129,204,.12),
+                rgba(36,129,204,.06));
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border-right: 4px solid var(--tg-theme-button-color, #2481cc);
+  }
+  .product-header .pico {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .product-header .ptxt {
+    flex: 1;
+    min-width: 0;
+  }
+  .product-header .plabel {
+    font-size: 11px;
+    opacity: .6;
+    margin-bottom: 2px;
+  }
+  .product-header .pname {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color, #000);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 🆕 کارت عکس با دکمه دانلود */
+  .image-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(128,128,128,.08);
+  }
+  .image-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+  }
+  .image-card .download-fab {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.65);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all .15s;
+    z-index: 2;
+  }
+  .image-card .download-fab:active {
+    transform: scale(.9);
+    background: rgba(36,129,204,.9);
+  }
+</style>
+</head>
+<body>
+
+<div id="debugBar"></div>
+
+<div class="app">
+
+  <div id="page-create">
+    <h1>🎨 استودیو محصول</h1>
+
+    <div class="card" id="uploadCard">
+      <label class="upload-zone" for="fileInput" id="uploadLabel" style="display:block;cursor:pointer;">
+        <div id="uploadContent">
+          <div class="plus">＋</div>
+          <div style="margin-top:8px">برای آپلود عکس محصول کلیک کن</div>
+          <div style="font-size:12px;opacity:.6;margin-top:4px">یک عکس انتخاب کن</div>
+        </div>
+      </label>
+      <input type="file" id="fileInput" accept="image/*"
+             style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+    </div>
+
+    <div id="styleSection" class="hidden">
+      <h2>۱) سبک عکس</h2>
+      <div class="style-grid">
+        <div class="style-opt" data-style="professional" onclick="selectStyle('professional')">
+          <span class="emoji">📸</span>
+          <div class="name">حرفه‌ای</div>
+          <div class="desc">استودیو گرم کرم/بژ</div>
+        </div>
+        <div class="style-opt" data-style="journalistic" onclick="selectStyle('journalistic')">
+          <span class="emoji">📰</span>
+          <div class="name">ژورنالی</div>
+          <div class="desc">خلاقانه و متنوع</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="textLengthSection" class="hidden">
+      <h2>۲) طول متن محصول</h2>
+      <div class="segment-control" id="textLengthControl">
+        <button class="seg-btn" data-len="short" onclick="selectLength('short')">کوتاه</button>
+        <button class="seg-btn active" data-len="medium" onclick="selectLength('medium')">متوسط</button>
+        <button class="seg-btn" data-len="long" onclick="selectLength('long')">بلند</button>
+      </div>
+    </div>
+
+    <div id="hashtagSection" class="hidden">
+      <h2>۳) هشتگ اینستاگرام</h2>
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0">
+        <div>
+          <div style="font-weight:600;font-size:14px">تولید هشتگ هوشمند</div>
+          <div style="font-size:11.5px;opacity:.6;margin-top:3px">
+            پیشنهاد هشتگ‌های مؤثر بر اساس عکس
+          </div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="hashtagToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div id="customPromptSection" class="hidden">
+      <h2>۴) توضیحات سفارشی (اختیاری)</h2>
+      <div class="card">
+        <textarea id="customPrompt" rows="3"
+          placeholder="مثلاً: پس‌زمینه چوب طبیعی، نورپردازی تاریک..."></textarea>
+      </div>
+    </div>
+
+    <div id="actionsSection" class="hidden" style="margin-top:16px">
+      <button class="primary" id="generateBtn" onclick="startGeneration()">
+        🚀 شروع تولید محتوا
+      </button>
+    </div>
+
+    <div id="progress" class="hidden" style="margin-top:16px">
+      <div class="card">
+        <div id="progressText">در حال پردازش...</div>
+      </div>
+    </div>
+
+    <!-- نتیجه -->
+    <div id="result" class="hidden" style="margin-top:16px">
+      <div id="resultProductHeader"></div>
+
+      <h2>🖼 تصاویر تولیدی</h2>
+      <div id="resultImages" class="gallery"></div>
+
+      <div id="resultHashtagsWrap" class="hidden" style="margin-top:16px">
+        <h2>#️⃣ هشتگ‌های پیشنهادی</h2>
+        <div class="hashtag-box" id="resultHashtags"></div>
+        <button class="copy-btn" onclick="copyHashtags()">📋 کپی هشتگ‌ها</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+        <h2 style="margin:0">📝 متن محصول</h2>
+        <button class="copy-btn" style="margin-top:0" onclick="copyText()">📋 کپی متن</button>
+      </div>
+      <div id="resultText" class="card"
+           style="white-space:pre-wrap; line-height:1.9; margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <div id="page-gallery" class="hidden">
+    <h1>🖼 محصولات من</h1>
+    <div id="galleryList"></div>
+  </div>
+
+  <div id="page-profile" class="hidden">
+    <h1>👤 پروفایل</h1>
+    <div class="card" id="profileCard"></div>
+  </div>
+
+  <div id="page-admin" class="hidden">
+    <h1>🛡 پنل ادمین</h1>
+    <div class="card" id="adminStats"></div>
+    <h2>📋 لیست درخواست‌ها</h2>
+    <div id="adminList"></div>
+  </div>
+
+</div>
+
+<div class="tabs" id="tabsBar">
+  <div class="tab active" data-page="create" onclick="switchTab('create')">
+    <span class="ico">🎨</span>ساخت
+  </div>
+  <div class="tab" data-page="gallery" onclick="switchTab('gallery')">
+    <span class="ico">🖼</span>گالری
+  </div>
+  <div class="tab" data-page="profile" onclick="switchTab('profile')">
+    <span class="ico">👤</span>پروفایل
+  </div>
+  <div class="tab hidden" id="tab-admin" data-page="admin" onclick="switchTab('admin')">
+    <span class="ico">🛡</span>ادمین
+  </div>
+</div>
+
+<script>
+// ============================================================
+// راه‌اندازی
+// ============================================================
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+tg.setHeaderColor('secondary_bg_color');
+tg.setBackgroundColor('bg_color');
+
+try { tg.disableVerticalSwipes(); } catch(_) {}
+
+const initData = tg.initData || "";
+const API = { headers: { 'X-Init-Data': initData } };
+
+let selectedStyle = null;
+let selectedFiles = [];
+let selectedLength = 'medium';
+let ME = null;
+let lastHashtags = '';
+let lastText = '';
+
+function showDebug(msg) {
+  const bar = document.getElementById('debugBar');
+  bar.textContent = msg;
+  bar.style.display = 'block';
+  console.error('DEBUG:', msg);
+}
+function hideDebug() {
+  document.getElementById('debugBar').style.display = 'none';
+}
+
+// ============================================================
+// فیکس باگ «صفحه خالی»
+// ============================================================
+function forceViewportReset() {
+  try { tg.expand(); } catch(_) {}
+  document.documentElement.style.height = '';
+  document.body.style.height = '';
+  void document.body.offsetHeight;
+  window.scrollTo(0, 0);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    setTimeout(forceViewportReset, 100);
+    setTimeout(forceViewportReset, 400);
+    setTimeout(forceViewportReset, 900);
+  }
+});
+window.addEventListener('focus', () => {
+  setTimeout(forceViewportReset, 100);
+  setTimeout(forceViewportReset, 400);
+});
+window.addEventListener('pageshow', () => {
+  setTimeout(forceViewportReset, 100);
+});
+
+// ============================================================
+// تب‌ها
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.page === name));
+  document.querySelectorAll('[id^=page-]').forEach(p =>
+    p.classList.add('hidden'));
+  document.getElementById('page-' + name).classList.remove('hidden');
+
+  if (name === 'gallery') loadGallery();
+  if (name === 'profile') loadProfile();
+  if (name === 'admin') loadAdmin();
+
+  forceViewportReset();
+}
+
+// ============================================================
+// اطلاعات کاربر
+// ============================================================
+async function loadMe() {
+  try {
+    if (!initData) {
+      showDebug('❌ initData خالیه');
+      return;
+    }
+
+    const res = await fetch('/api/me', { headers: API.headers });
+    if (!res.ok) {
+      const errText = await res.text();
+      showDebug('❌ احراز هویت خطا (' + res.status + '): ' + errText.slice(0, 150));
+      return;
+    }
+
+    ME = await res.json();
+    hideDebug();
+
+    if (ME.is_admin) {
+      document.getElementById('tab-admin').classList.remove('hidden');
+    }
+  } catch (e) {
+    console.error('❌ loadMe error:', e);
+    showDebug('❌ اتصال به سرور ناموفق: ' + e.message);
+  }
+}
+
+// ============================================================
+// انتخاب فایل
+// ============================================================
+function handleFileSelect(e) {
+  selectedFiles = Array.from(e.target.files);
+  if (!selectedFiles.length) return;
+  if (selectedFiles.length > 1) {
+    selectedFiles = [selectedFiles[0]];
+  }
+
+  document.getElementById('uploadContent').innerHTML = `
+    <div style="text-align:center">
+      <div style="font-size:32px">✅</div>
+      <div style="margin-top:6px">عکس انتخاب شد</div>
+      <div style="font-size:12px;opacity:.6;margin-top:4px">برای تغییر دوباره کلیک کن</div>
+    </div>
+  `;
+
+  document.getElementById('styleSection').classList.remove('hidden');
+  document.getElementById('textLengthSection').classList.remove('hidden');
+  document.getElementById('hashtagSection').classList.remove('hidden');
+  document.getElementById('customPromptSection').classList.remove('hidden');
+  document.getElementById('actionsSection').classList.remove('hidden');
+
+  try { tg.HapticFeedback.impactOccurred('light'); } catch(_) {}
+
+  setTimeout(forceViewportReset, 50);
+  setTimeout(forceViewportReset, 250);
+  setTimeout(forceViewportReset, 700);
+  setTimeout(forceViewportReset, 1500);
+}
+
+document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+
+// ============================================================
+// انتخاب سبک و طول
+// ============================================================
+function selectStyle(style) {
+  selectedStyle = style;
+  document.querySelectorAll('.style-opt').forEach(el =>
+    el.classList.toggle('selected', el.dataset.style === style));
+  try { tg.HapticFeedback.selectionChanged(); } catch(_) {}
+}
+
+function selectLength(len) {
+  selectedLength = len;
+  document.querySelectorAll('.seg-btn').forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.len === len));
+  try { tg.HapticFeedback.selectionChanged(); } catch(_) {}
+}
+
+// ============================================================
+// تولید محتوا
+// ============================================================
+async function startGeneration() {
+  if (!selectedFiles.length || !selectedStyle) {
+    alert('عکس و سبک رو انتخاب کن');
+    return;
+  }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'لطفا صبر کنید... <span class="spinner"></span>';
+
+  document.getElementById('progress').classList.remove('hidden');
+  setProgress('📤 در حال آپلود عکس...');
+
+  try {
+    const customPrompt = document.getElementById('customPrompt').value.trim();
+    const wantHashtags = document.getElementById('hashtagToggle').checked;
+
+    const formData = new FormData();
+    formData.append('files', selectedFiles[0]);
+    formData.append('style', selectedStyle);
+    formData.append('custom_prompt', customPrompt);
+    formData.append('text_length', selectedLength);
+    formData.append('generate_hashtags', wantHashtags ? '1' : '0');
+
+    const uploadRes = await fetch('/api/upload', {
+      method: 'POST', headers: API.headers, body: formData
+    });
+    if (!uploadRes.ok) {
+      const err = await uploadRes.text();
+      throw new Error('آپلود: ' + uploadRes.status + ' - ' + err.slice(0, 100));
+    }
+    const { upload_id } = await uploadRes.json();
+
+    setProgress('🔍 در حال تشخیص محصول...');
+    const startForm = new FormData();
+    startForm.append('upload_id', upload_id);
+    const startRes = await fetch('/api/generate', {
+      method: 'POST', headers: API.headers, body: startForm
+    });
+
+    if (!startRes.ok) {
+      const err = await startRes.text();
+      throw new Error('شروع: ' + startRes.status + ' - ' + err.slice(0, 100));
+    }
+    const { job_id } = await startRes.json();
+
+    let result = null;
+    while (true) {
+      await sleep(2000);
+      const s = await fetch(`/api/status/${job_id}`, { headers: API.headers });
+      const status = await s.json();
+      if (status.stage) setProgress(status.stage);
+      if (status.status === 'done') { result = status.result; break; }
+      if (status.status === 'error') throw new Error(status.error || 'خطا');
+    }
+
+    showResult(result);
+    try { tg.HapticFeedback.notificationOccurred('success'); } catch(_) {}
+
+  } catch (err) {
+    console.error(err);
+    setProgress('❌ ' + err.message);
+    showDebug('❌ ' + err.message);
+    try { tg.HapticFeedback.notificationOccurred('error'); } catch(_) {}
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 شروع تولید محتوا';
+  }
+}
+
+function setProgress(text) {
+  document.getElementById('progressText').textContent = text;
+}
+
+// ============================================================
+// نمایش نتیجه
+// ============================================================
+function showResult(data) {
+  // 🆕 هدر با نام محصول
+  document.getElementById('resultProductHeader').innerHTML = `
+    <div class="product-header">
+      <div class="pico">📦</div>
+      <div class="ptxt">
+        <div class="plabel">محصول تولید شده</div>
+        <div class="pname">${escapeHtml(data.product_name || 'بدون نام')}</div>
+      </div>
+    </div>
+  `;
+
+  // 🆕 تصاویر با دکمه دانلود
+  const c = document.getElementById('resultImages');
+  c.innerHTML = '';
+  (data.images || []).forEach((img, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'image-card';
+
+    const el = document.createElement('img');
+    el.src = img.url.replace('/files/', '/thumb/');
+    el.loading = 'lazy';
+    el.onclick = () => tg.openLink(location.origin + img.url);
+
+    const fab = document.createElement('button');
+    fab.className = 'download-fab';
+    fab.innerHTML = '⬇️';
+    fab.title = 'دانلود عکس';
+    fab.onclick = (ev) => {
+      ev.stopPropagation();
+      downloadImage(location.origin + img.url, data.product_name, idx);
+    };
+
+    wrap.appendChild(el);
+    wrap.appendChild(fab);
+    c.appendChild(wrap);
+  });
+
+  // هشتگ‌ها
+  if (data.hashtags && data.hashtags.trim()) {
+    lastHashtags = data.hashtags;
+    renderHashtags(data.hashtags);
+    document.getElementById('resultHashtagsWrap').classList.remove('hidden');
+  } else {
+    document.getElementById('resultHashtagsWrap').classList.add('hidden');
+    lastHashtags = '';
+  }
+
+  // متن
+  lastText = data.description || '';
+  document.getElementById('resultText').textContent =
+    lastText || '(متنی تولید نشد)';
+
+  document.getElementById('result').classList.remove('hidden');
+  try { tg.HapticFeedback.impactOccurred('medium'); } catch(_) {}
+
+  setTimeout(forceViewportReset, 100);
+  setTimeout(forceViewportReset, 500);
+}
+
+function renderHashtags(text) {
+  const box = document.getElementById('resultHashtags');
+  const tags = text.split(/[\s,،\n]+/).filter(t => t.trim());
+  box.innerHTML = tags.map(t => {
+    const clean = t.startsWith('#') ? t : '#' + t;
+    return `<span class="ht">${escapeHtml(clean)}</span>`;
+  }).join('');
+}
+
+// ============================================================
+// 🆕 کپی متن
+// ============================================================
+function copyText() {
+  if (!lastText) {
+    alert('متنی برای کپی وجود ندارد');
+    return;
+  }
+  navigator.clipboard.writeText(lastText).then(() => {
+    alert('✅ متن کپی شد');
+    try { tg.HapticFeedback.notificationOccurred('success'); } catch(_) {}
+  }).catch(() => {
+    alert('❌ کپی نشد. دستی کپی کن:\n\n' + lastText.slice(0, 200));
+  });
+}
+
+// ============================================================
+// کپی هشتگ‌ها
+// ============================================================
+function copyHashtags() {
+  if (!lastHashtags) return;
+  const tags = lastHashtags.split(/[\s,،\n]+/).filter(t => t.trim());
+  const cleanText = tags.map(t => t.startsWith('#') ? t : '#' + t).join(' ');
+  navigator.clipboard.writeText(cleanText).then(() => {
+    alert('✅ هشتگ‌ها کپی شدند');
+    try { tg.HapticFeedback.notificationOccurred('success'); } catch(_) {}
+  }).catch(() => {
+    alert('❌ کپی نشد. دستی کپی کن:\n' + cleanText);
+  });
+}
+
+// ============================================================
+// 🆕 دانلود عکس
+// ============================================================
+function downloadImage(url, productName, index) {
+  const safeName = (productName || 'product').replace(/[^\u0600-\u06FFa-zA-Z0-9_-]/g, '_');
+  const filename = `${safeName}_${index + 1}.png`;
+
+  // تلاش با downloadFile (Bot API 8.0+)
+  if (typeof tg.downloadFile === 'function') {
+    try {
+      tg.downloadFile({ url: url, file_name: filename }, (ok) => {
+        if (ok) {
+          alert('✅ دانلود شد');
+          try { tg.HapticFeedback.notificationOccurred('success'); } catch(_) {}
+        } else {
+          fallbackDownload(url, filename);
+        }
+      });
+      return;
+    } catch (_) {
+      // ادامه با fallback
+    }
+  }
+
+  fallbackDownload(url, filename);
+}
+
+function fallbackDownload(url, filename) {
+  // روش اول: باز کردن با openLink (کاربر می‌تونه ذخیره کنه)
+  try {
+    tg.openLink(url, { try_instant_view: false });
+    return;
+  } catch (_) {}
+
+  // روش دوم: لینک دانلود
+  try {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (e) {
+    alert('برای دانلود، روی عکس بزن و نگه دار سپس Save Image');
+  }
+}
+
+// ============================================================
+// گالری (با نام محصول و دانلود)
+// ============================================================
+async function loadGallery() {
+  try {
+    const res = await fetch('/api/products', { headers: API.headers });
+    if (!res.ok) {
+      document.getElementById('galleryList').innerHTML =
+        `<div class="empty">❌ خطا (${res.status})</div>`;
+      return;
+    }
+    const data = await res.json();
+    const c = document.getElementById('galleryList');
+
+    if (!data.products.length) {
+      c.innerHTML = `<div class="empty">
+        <div class="ico">📭</div><div>هنوز محصولی نساختی</div></div>`;
+      return;
+    }
+
+    c.innerHTML = data.products.map(p => `
+      <div class="card">
+        <div class="product-header" style="margin-bottom:10px">
+          <div class="pico">📦</div>
+          <div class="ptxt">
+            <div class="plabel">${formatDate(p.created_at)}</div>
+            <div class="pname">${escapeHtml(p.product_name)}</div>
+          </div>
+        </div>
+
+        <div class="gallery">
+          ${(p.images || []).slice(0, 4).map((i, idx) => `
+            <div class="image-card">
+              <img src="/thumb/${i.file_path}" loading="lazy"
+                   onclick="tg.openLink('${location.origin}/files/${i.file_path}')">
+              <button class="download-fab"
+                      onclick="event.stopPropagation(); downloadImage('${location.origin}/files/${i.file_path}', '${escapeHtml(p.product_name).replace(/'/g, "")}', ${idx})">⬇️</button>
+            </div>
+          `).join('')}
+        </div>
+
+        ${p.description ? `
+          <div style="margin-top:10px;font-size:13px;opacity:.75;line-height:1.7">
+            ${escapeHtml(p.description).slice(0, 150)}${p.description.length > 150 ? '...' : ''}
+          </div>
+          <button class="copy-btn" style="margin-top:8px" onclick="copyGalleryText(${p.id})">📋 کپی متن</button>
+        ` : ''}
+      </div>
+    `).join('');
+
+    // ذخیره متن‌ها برای کپی
+    window._galleryTexts = {};
+    data.products.forEach(p => {
+      if (p.description) window._galleryTexts[p.id] = p.description;
+    });
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function copyGalleryText(pid) {
+  const t = window._galleryTexts?.[pid];
+  if (!t) return;
+  navigator.clipboard.writeText(t).then(() => {
+    alert('✅ متن کپی شد');
+    try { tg.HapticFeedback.notificationOccurred('success'); } catch(_) {}
+  }).catch(() => {
+    alert('❌ کپی نشد');
+  });
+}
+
+// ============================================================
+// پروفایل
+// ============================================================
+async function loadProfile() {
+  try {
+    const u = tg.initDataUnsafe?.user || {};
+    const res = await fetch('/api/products', { headers: API.headers });
+    const data = res.ok ? await res.json() : { products: [] };
+
+    document.getElementById('profileCard').innerHTML = `
+      <div style="display:flex;gap:12px;align-items:center">
+        ${u.photo_url ? `<img src="${u.photo_url}" style="width:56px;height:56px;border-radius:50%">` : '<div style="font-size:40px">👤</div>'}
+        <div>
+          <div style="font-weight:700">${escapeHtml((u.first_name||'') + ' ' + (u.last_name||''))}</div>
+          <div style="font-size:13px;opacity:.6">${u.username ? '@' + u.username : ''}</div>
+          ${ME?.is_admin ? '<span class="badge admin" style="margin-top:6px;display:inline-block">🛡 ادمین</span>' : ''}
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid rgba(128,128,128,.2);margin:14px 0">
+      <div class="stat-row">
+        <div><div class="num">${data.products.length}</div><div class="lbl">محصول</div></div>
+        <div><div class="num">${data.products.reduce((a,p)=>a+(p.images?.length||0),0)}</div><div class="lbl">عکس</div></div>
+      </div>
+    `;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ============================================================
+// پنل ادمین
+// ============================================================
+async function loadAdmin() {
+  if (!ME?.is_admin) return;
+
+  try {
+    const res = await fetch('/api/admin/requests?limit=100', { headers: API.headers });
+
+    if (!res.ok) {
+      const err = await res.text();
+      document.getElementById('adminList').innerHTML =
+        `<div class="empty">❌ دسترسی نداری (${res.status})<br><small>${err.slice(0,100)}</small></div>`;
+      return;
+    }
+
+    const data = await res.json();
+    const s = data.stats;
+
+    document.getElementById('adminStats').innerHTML = `
+      <div class="stat-row">
+        <div><div class="num">${s.total_users}</div><div class="lbl">کاربر</div></div>
+        <div><div class="num">${s.total_products}</div><div class="lbl">درخواست</div></div>
+        <div><div class="num">${s.total_generated}</div><div class="lbl">عکس تولیدی</div></div>
+      </div>
+    `;
+
+    if (!data.products.length) {
+      document.getElementById('adminList').innerHTML =
+        '<div class="empty"><div class="ico">📭</div>هیچ درخواستی ثبت نشده</div>';
+      return;
+    }
+
+    document.getElementById('adminList').innerHTML = data.products.map(p => {
+      const originalFile = p.originals?.[0]?.file_path;
+      const generatedFile = p.generated?.[0]?.file_path;
+
+      const originalUrl = originalFile ? `/files/${originalFile}` : null;
+      const generatedUrl = generatedFile ? `/files/${generatedFile}` : null;
+
+      const lenLabel = { short: 'کوتاه', medium: 'متوسط', long: 'بلند' }[p.text_length] || '';
+
+      return `
+        <div class="user-card">
+          <div class="product-header" style="margin-bottom:10px">
+            <div class="pico">📦</div>
+            <div class="ptxt">
+              <div class="plabel">👤 ${p.user_id} • ${formatDate(p.created_at)}</div>
+              <div class="pname">${escapeHtml(p.product_name)}</div>
+            </div>
+          </div>
+
+          <div style="font-size:12px;opacity:.6;margin-bottom:10px">
+            ${p.style ? `سبک: ${p.style === 'professional' ? '📸 حرفه‌ای' : '📰 ژورنالی'}` : ''}
+            ${lenLabel ? ` • طول: ${lenLabel}` : ''}
+          </div>
+
+          <div class="compare">
+            <div class="compare-item">
+              ${originalUrl
+                ? `<img src="/thumb/${originalFile}" loading="lazy"
+                        onclick="tg.openLink('${location.origin}${originalUrl}')">`
+                : '<div style="aspect-ratio:1;background:rgba(128,128,128,.1);border-radius:10px"></div>'}
+              <span class="label">قبل</span>
+            </div>
+            <div class="compare-item">
+              ${generatedUrl
+                ? `<img src="/thumb/${generatedFile}" loading="lazy"
+                        onclick="tg.openLink('${location.origin}${generatedUrl}')">`
+                : '<div style="aspect-ratio:1;background:rgba(128,128,128,.1);border-radius:10px"></div>'}
+              <span class="label">بعد</span>
+            </div>
+          </div>
+
+          ${p.custom_prompt
+            ? `<div style="margin-top:8px;font-size:12px;background:rgba(128,128,128,.1);
+                  padding:8px;border-radius:8px;line-height:1.6">
+                 💬 <strong>توضیحات سفارشی:</strong> ${escapeHtml(p.custom_prompt)}
+               </div>`
+            : ''}
+
+          ${p.hashtags
+            ? `<div style="margin-top:8px;font-size:12px;background:rgba(36,129,204,.08);
+                  padding:8px;border-radius:8px;line-height:1.8">
+                 #️⃣ <strong>هشتگ‌ها:</strong> ${escapeHtml(p.hashtags).slice(0, 200)}
+               </div>`
+            : ''}
+
+          ${p.description
+            ? `<div style="margin-top:8px;font-size:12px;opacity:.7;line-height:1.7">
+                 ${escapeHtml(p.description).slice(0, 180)}...
+               </div>`
+            : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    console.error(e);
+    document.getElementById('adminList').innerHTML =
+      `<div class="empty">❌ خطا: ${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// ابزارها
+// ============================================================
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('fa-IR', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit'
+    });
+  } catch { return iso; }
+}
+
+// ============================================================
+// شروع
+// ============================================================
+(async () => {
+  await loadMe();
+  forceViewportReset();
+})();
+</script>
+</body>
+</html>

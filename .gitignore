@@ -1,0 +1,28 @@
+# فایل حساس
+config.py
+*.log
+
+# دیتابیس
+*.db
+*.db-journal
+data.db
+
+# پوشه‌های داده
+downloads/
+generated/
+thumbs/
+uploads_tmp/
+__pycache__/
+
+# پایتون
+*.py[cod]
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# سیستم
+.DS_Store
+Thumbs.db
